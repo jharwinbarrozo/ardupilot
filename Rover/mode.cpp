@@ -307,9 +307,11 @@ void Mode::calc_throttle(float target_speed, bool avoidance_enabled)
         // sailboats use special throttle and mainsail controller
         float mainsail_out = 0.0f;
         float wingsail_out = 0.0f;
-        rover.g2.sailboat.get_throttle_and_mainsail_out(target_speed, throttle_out, mainsail_out, wingsail_out);
+        float mast_rotation_out = 0.0f;
+        rover.g2.sailboat.get_throttle_and_mainsail_out(target_speed, throttle_out, mainsail_out, wingsail_out, mast_rotation_out);
         rover.g2.motors.set_mainsail(mainsail_out);
         rover.g2.motors.set_wingsail(wingsail_out);
+        rover.g2.motors.set_mast_rotation(mast_rotation_out);
     } else {
         // call speed or stop controller
         if (is_zero(target_speed) && !rover.is_balancebot()) {
@@ -454,7 +456,7 @@ void Mode::calc_steering_from_turn_rate(float turn_rate)
 void Mode::calc_steering_from_lateral_acceleration(float lat_accel, bool reversed)
 {
     // constrain to max G force
-    lat_accel = constrain_float(lat_accel, -g.turn_max_g * GRAVITY_MSS, g.turn_max_g * GRAVITY_MSS);
+    lat_accel = constrain_float(lat_accel, -attitude_control.get_turn_lat_accel_max(), attitude_control.get_turn_lat_accel_max());
 
     // send final steering command to motor library
     const float steering_out = attitude_control.get_steering_out_lat_accel(lat_accel,
